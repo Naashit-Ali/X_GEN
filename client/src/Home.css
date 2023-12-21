@@ -1,0 +1,93 @@
+.background-radial-gradient {
+    background-color: hsl(218, 41%, 15%);
+    background-image: radial-gradient(650px circle at 0% 0%,
+        hsl(218, 41%, 35%) 15%,
+        hsl(218, 41%, 30%) 35%,
+        hsl(218, 41%, 20%) 75%,
+        hsl(218, 41%, 19%) 80%,
+        transparent 100%),
+      radial-gradient(1250px circle at 100% 100%,
+        hsl(218, 41%, 45%) 15%,
+        hsl(218, 41%, 30%) 35%,
+        hsl(218, 41%, 20%) 75%,
+        hsl(218, 41%, 19%) 80%,
+        transparent 100%);
+  }
+/* Style the sidebar - fixed full height */
+.sidebar {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 16px;
+}
+
+/* Style sidebar links */
+.sidebar a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 20px;
+  color: #818181;
+  display: block;
+}
+
+/* Style links on mouse-over */
+.sidebar a:hover {
+  color: #f1f1f1;
+}
+
+/* Style the main content */
+.main {
+  margin-left: 160px; /* Same as the width of the sidenav */
+  padding: 0px 10px;
+}
+
+/* Add media queries for small screens (when the height of the screen is less than 450px, add a smaller padding and font-size) */
+@media screen and (max-height: 450px) {
+  .sidebar {padding-top: 15px;}
+  .sidebar a {font-size: 18px;}
+}
+
+.div2{
+  float: right;
+  width: 85%;
+  border-radius: 20px;
+  color: white;
+  text-align: center;
+  margin-right: 30px;
+}
+
+.table_div{
+  margin-top: 80px;
+  border-radius: 20px;
+  color: #111111;
+  align-items: center;
+  align-content: center;
+}
+th,
+td {
+  border: 0px solid black;
+  padding: 5px;
+}
+
+table {
+  width: 99%; border-collapse: separate;
+  border-spacing: 0 15px;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.edit-button, .delete-button {
+  padding: 5px 10px;
+  cursor: pointer;
+  background-color: blueviolet;
+  border-radius: 15px;
+  width: 70px;
+}
