@@ -1,17 +1,12 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 import {
-  MDBBtn,
   MDBContainer,
   MDBRow,
   MDBCol,
-  MDBCard,
-  MDBCardBody,
-  MDBInput,
-  MDBCheckbox,
-  MDBIcon
 } from 'mdb-react-ui-kit';
 
 import './Home.css';
@@ -22,7 +17,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate inputs
@@ -31,24 +26,28 @@ function Login() {
       return;
     }
 
-    axios.post('http://localhost:3001/login', { email, password })
-      .then(result => {
-        console.log(result);
+    try {
+      const response = await axios.post('http://localhost:5000/login', { email, password });
+      const { status, token } = response.data;
 
-        if (result.data === "Success") {
-          navigate('/home');
-        } else {
-          alert("Wrong username or password");
-        }
-      })
-      .catch(err => console.log(err));
+      if (status === "Success") {
+        // Store the token in cookies
+        Cookies.set('token', token, { expires: 7 }); // Set the cookie to expire in 7 days
+
+        navigate('/home');
+      } else {
+        alert("Wrong username or password");
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+      alert("An error occurred during login");
+    }
   };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  
 
   return (
 
@@ -80,7 +79,6 @@ function Login() {
 
     <div className="d-flex justify-content-center align-items-center bg-secondary vh-100" 
     style={{ background: 'linear-gradient(to right, #6522c3, #2dfd80)' }}>
-
       
       <div className=" p-4 rounded w-50 " style={{marginLeft: 50, backgroundColor: 'hsl(218, 81%, 75%)' }}>
         <h2>Login</h2>

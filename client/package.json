@@ -17,12 +17,16 @@
     "@mui/material": "^5.15.0",
     "axios": "^1.6.2",
     "bootstrap": "^5.3.2",
+    "cookie-parser": "^1.4.6",
+    "js-cookie": "^3.0.5",
+    "jsonwebtoken": "^9.0.2",
     "mdb-react-ui-kit": "^7.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-modal": "^3.16.1",
-    "react-router-dom": "^6.21.0",
-    "styled-components": "^6.1.1"
+    "react-router-dom": "^6.21.1",
+    "styled-components": "^6.1.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
