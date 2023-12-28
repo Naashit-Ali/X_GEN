@@ -13,7 +13,7 @@ const PrivateRoute = ({ element, ...props }) => {
   return isAuthenticated ? (
   <Outlet /> 
   ) : (
-    <Navigate to="/login" replace />
+    <Navigate to="/login" />
   );
 };
 
