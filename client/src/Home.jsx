@@ -82,11 +82,11 @@ function Home() {
     calculateTotalAmount(); 
   //   const token = Cookies.get('token'); // Replace 'your_token_key_here' with your actual token key
 
-  //   if (!token) {
-  //     // Redirect to the login page if the token is not present
-  //     navigate('/home');
-  //   }// Calculate total amount when the component mounts or expenses change
-  // }, [][expenses]);
+    if (!token) {
+      // Redirect to the login page if the token is not present
+      navigate('/home');
+    }// Calculate total amount when the component mounts or expenses change
+  }, [][expenses]);
 
   const fetchNextItemID = async () => {
     try {
