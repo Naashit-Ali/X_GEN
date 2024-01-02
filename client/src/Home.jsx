@@ -115,7 +115,7 @@ function Home() {
 
   const fetchNextItemID = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/expenses/nextItemID');
+      const response = await fetch('https://x-genback.vercel.app/api/expenses/nextItemID');
       const data = await response.json();
       setNextItemID(data.nextItemID);
     } catch (error) {
@@ -215,7 +215,7 @@ function Home() {
     }
   
     try {
-      const response = await fetch('http://localhost:5000/api/expenses', {
+      const response = await fetch('https://x-genback.vercel.app/api/expenses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -248,7 +248,7 @@ function Home() {
 
   const fetchExpenses = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/expenses');
+      const response = await fetch('https://x-genback.vercel.app/api/expenses');
       const data = await response.json();
       setExpenses(data);
       calculateTotalAmount(); // Update total amount after fetching expenses
@@ -260,7 +260,7 @@ function Home() {
 
   const handleDeleteExpense = async (expenseId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/expenses/${expenseId}`, {
+      const response = await fetch(`https://x-genback.vercel.app/api/expenses/${expenseId}`, {
         method: 'DELETE',
       });
   
@@ -387,7 +387,7 @@ function Home() {
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/api/expenses/${_id}`, {
+      const response = await fetch(`https://x-genback.vercel.app/api/expenses/${_id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
