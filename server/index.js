@@ -15,6 +15,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Connect to MongoDB using Mongoose
+
 mongoose.connect('mongodb+srv://user:12345@naashit.asifuci.mongodb.net/employee', { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
 
@@ -68,10 +69,6 @@ function verifyToken(req, res, next) {
   });
 }
 
-
-
-
-
 app.post('/register', (req, res) =>{
   EmployeeModel.create(req.body)
   .then(employees => res.json(employees))
@@ -88,6 +85,8 @@ const expenseSchema = new mongoose.Schema({
   date: String,
   amount: String,
   quantity: String,
+  status: String,
+
 });
 
 const Expense = mongoose.model('Expense', expenseSchema);
@@ -120,11 +119,11 @@ app.get('/api/expenses', async (req, res) => {
 });
 
 // API endpoint to add a new expense
+// API endpoint to add a new expense
 app.post('/api/expenses', async (req, res) => {
-  const { itemID, itemName, userName, category, date, amount, quantity } = req.body;
-
+  const { itemID, itemName, userName, category, date, amount, quantity, status } = req.body;
   try {
-    const newExpense = new Expense({ itemID, itemName, userName, category, date, amount, quantity });
+    const newExpense = new Expense({ itemID, itemName, userName, category, date, amount, quantity, status }); // Add "status" here
     await newExpense.save();
     res.json(newExpense);
   } catch (error) {
@@ -133,15 +132,14 @@ app.post('/api/expenses', async (req, res) => {
   }
 });
 
-
 app.put('/api/expenses/:id', async (req, res) => {
   const expenseId = req.params.id;
-  const { itemName, userName, category, date, amount, quantity } = req.body;
+  const { itemName, userName, category, date, amount, quantity, status } = req.body; // Add "status" here
 
   try {
     const updatedExpense = await Expense.findByIdAndUpdate(
       expenseId,
-      { itemName, userName, category, date, amount, quantity },
+      { itemName, userName, category, date, amount, quantity, status }, // Add "status" here
       { new: true }
     );
 
@@ -155,6 +153,7 @@ app.put('/api/expenses/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 // API endpoint to delete an expense by ID
 app.delete('/api/expenses/:id', async (req, res) => {
