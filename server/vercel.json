@@ -2,7 +2,6 @@
   "version": 2,
   "builds": [{ "src": "index.js", "use": "@vercel/node" }],
   "routes": [
-    { "src": "*.js", "dest": "/" },
     { "src": "/login", "dest": "/index.js" },
     { "src": "/register", "dest": "/index.js" },
     { "src": "/api/expenses/nextItemID", "dest": "/index.js" },
@@ -11,19 +10,15 @@
     { "src": "/home", "dest": "/index.js" },
     { "src": "/(.*)", "dest": "/index.js" }
   ],
-  "rewrites": [
-       {
-           "source": "/(.*)",
-           "destination": "/index.js"
-       }
-   ],
-   "headers": [
-       {
-           "source": "/(.*)",
-           "headers": [
-               {
-                   "key": "Access-Control-Allow-Origin",
-                   "value": "*"
-               }
-           ]
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ]
 }
