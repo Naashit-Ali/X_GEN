@@ -39,7 +39,16 @@ function Home() {
   const getFilteredExpenses = () => {
     const currentDate = new Date();
 
+    const filteredBySearch = expenses.filter((expense) =>
+      expense.itemName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     switch (filterType) {
+      case 'daily':
+        const startOfDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+        return filteredBySearch.filter(
+          (expense) => new Date(expense.date) >= startOfDay && new Date(expense.date) <= currentDate
+        );
       case 'monthly':
         const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
         return expenses.filter(
@@ -63,24 +72,20 @@ function Home() {
         );
 
       default:
-        return expenses; // 'all' or invalid filter type, return all expenses
+        return filteredBySearch;; // 'all' or invalid filter type, return all expenses
     }
   };
-
-
+  
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
 
-  const filteredExpenses = expenses.filter((expense) =>
-    expense.itemName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   useEffect(() => {
     fetchExpenses();
     fetchNextItemID();
     calculateTotalAmount(); 
-  //   const token = Cookies.get('token'); // Replace 'your_token_key_here' with your actual token key
+    const token = Cookies.get('token'); // Replace 'your_token_key_here' with your actual token key
 
     if (!token) {
       // Redirect to the login page if the token is not present
@@ -90,7 +95,7 @@ function Home() {
 
   const fetchNextItemID = async () => {
     try {
-      const response = await fetch('https://x-genback.vercel.app/api/expenses/nextItemID');
+      const response = await fetch('https://x-genback-naashits-projects.vercel.app/api/expenses/nextItemID');
       const data = await response.json();
       setNextItemID(data.nextItemID);
     } catch (error) {
@@ -188,7 +193,7 @@ function Home() {
     }
   
     try {
-      const response = await fetch('https://x-genback.vercel.app/api/expenses', {
+      const response = await fetch('https://x-genback-naashits-projects.vercel.app/api/expenses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -220,7 +225,7 @@ function Home() {
 
   const fetchExpenses = async () => {
     try {
-      const response = await fetch('https://x-genback.vercel.app/api/expenses');
+      const response = await fetch('https://x-genback-naashits-projects.vercel.app/api/expenses');
       const data = await response.json();
       setExpenses(data);
     } catch (error) {
@@ -230,7 +235,7 @@ function Home() {
 
   const handleDeleteExpense = async (expenseId) => {
     try {
-      const response = await fetch(`https://x-genback.vercel.app/api/expenses/${expenseId}`, {
+      const response = await fetch(`https://x-genback-naashits-projects.vercel.app/api/expenses/${expenseId}`, {
         method: 'DELETE',
       });
   
@@ -345,7 +350,7 @@ function Home() {
         return;
       }
 
-      const response = await fetch(`https://x-genback.vercel.app/api/expenses/${_id}`, {
+      const response = await fetch(`https://x-genback-naashits-projects.vercel.app/api/expenses/${_id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -431,6 +436,7 @@ function Home() {
           style={{ float: 'left', marginLeft: '40px', marginTop: '20px', width: '20%' }}
         >
           <option value='all'>All</option>
+          <option value='daily'>Daily</option> {/* Add this line */}
           <option value='monthly'>Monthly</option>
           <option value='weekly'>Weekly</option>
           <option value='yearly'>Yearly</option>
