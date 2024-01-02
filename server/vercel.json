@@ -2,6 +2,7 @@
   "version": 2,
   "builds": [{ "src": "index.js", "use": "@vercel/node" }],
   "routes": [
+    { "src": "*.js", "dest": "/" },
     { "src": "/login", "dest": "/index.js" },
     { "src": "/register", "dest": "/index.js" },
     { "src": "/api/expenses/nextItemID", "dest": "/index.js" },
