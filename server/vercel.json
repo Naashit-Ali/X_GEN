@@ -11,19 +11,20 @@
     { "src": "/(.*)", "dest": "/index.js" }
   ],
   "rewrites": [
-       {
-           "source": "/(.*)",
-           "destination": "/index.js"
-       }
-   ],
-   "headers": [
-       {
-           "source": "/(.*)",
-           "headers": [
-               {
-                   "key": "Access-Control-Allow-Origin",
-                   "value": "*"
-               }
-           ]
+    {
+      "source": "/(.*)",
+      "destination": "/index.js"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ]
 }
-     
