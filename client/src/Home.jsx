@@ -26,14 +26,30 @@ function Home() {
     quantity: '',
     date: '',
     amount: '',
+    status: '',
   });
+  const [status, setStatus] = useState(['Received' , 'Pay']); // Add this line
   const [filterType, setFilterType] = useState('all');
   const navigate = useNavigate();
+  const [statusFilter, setStatusFilter] = useState('');
+  
+  
+  
+  const capitalizeWords = (str) => {
+    return str
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
 
 
   
   const handleFilterChange = (e) => {
     setFilterType(e.target.value);
+  };
+
+  const handleStatusFilterChange = (e) => {
+    setStatusFilter(e.target.value);
   };
 
   const getFilteredExpenses = () => {
@@ -42,6 +58,10 @@ function Home() {
     const filteredBySearch = expenses.filter((expense) =>
       expense.itemName.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const filteredByStatus = statusFilter
+      ? filteredBySearch.filter((expense) => expense.status === statusFilter)
+      : filteredBySearch;
 
     switch (filterType) {
       case 'daily':
@@ -72,10 +92,10 @@ function Home() {
         );
 
       default:
-        return filteredBySearch;; // 'all' or invalid filter type, return all expenses
+        return filteredByStatus;; // 'all' or invalid filter type, return all expenses
     }
   };
-  
+
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -95,7 +115,7 @@ function Home() {
 
   const fetchNextItemID = async () => {
     try {
-      const response = await fetch('https://x-genback-naashits-projects.vercel.app/api/expenses/nextItemID');
+      const response = await fetch('http://localhost:5000/api/expenses/nextItemID');
       const data = await response.json();
       setNextItemID(data.nextItemID);
     } catch (error) {
@@ -152,6 +172,7 @@ function Home() {
     const quantity = document.getElementById('quantity').value;
     const date = document.getElementById('date').value;
     const amount = document.getElementById('amount').value;
+    const status = document.getElementById('status').value;
   
     // Basic field validations
     const validationFields = [
@@ -161,6 +182,7 @@ function Home() {
       { field: 'date', value: date, label: 'Date' },
       { field: 'amount', value: amount, label: 'Amount' },
       { field: 'category', value: category, label: 'Category' },
+      {field: 'status', value: status, label: 'Status'}
     ];
   
     let isValid = true;
@@ -193,7 +215,7 @@ function Home() {
     }
   
     try {
-      const response = await fetch('https://x-genback-naashits-projects.vercel.app/api/expenses', {
+      const response = await fetch('http://localhost:5000/api/expenses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -206,6 +228,7 @@ function Home() {
           date,
           amount,
           category,
+          status,
         }),
       });
   
@@ -225,17 +248,19 @@ function Home() {
 
   const fetchExpenses = async () => {
     try {
-      const response = await fetch('https://x-genback-naashits-projects.vercel.app/api/expenses');
+      const response = await fetch('http://localhost:5000/api/expenses');
       const data = await response.json();
       setExpenses(data);
+      calculateTotalAmount(); // Update total amount after fetching expenses
     } catch (error) {
       console.error('Error fetching expenses:', error);
     }
   };
+  
 
   const handleDeleteExpense = async (expenseId) => {
     try {
-      const response = await fetch(`https://x-genback-naashits-projects.vercel.app/api/expenses/${expenseId}`, {
+      const response = await fetch(`http://localhost:5000/api/expenses/${expenseId}`, {
         method: 'DELETE',
       });
   
@@ -252,9 +277,18 @@ function Home() {
   };
   
   const calculateTotalAmount = () => {
-    const total = expenses.reduce((acc, expense) => acc + parseFloat(expense.amount), 0);
+    const total = getFilteredExpenses().reduce((acc, expense) => {
+      if ((statusFilter === '' || expense.status === statusFilter) && expense.status === 'Received') {
+        return acc + parseFloat(expense.amount);
+      } else if ((statusFilter === '' || expense.status === statusFilter) && expense.status === 'Pay') {
+        return acc - parseFloat(expense.amount);
+      }
+      return acc;
+    }, 0);
+  
     setTotalAmount(total);
   };
+  
   
   const populateEditForm = (expense) => {
     // Populate the state with the expense data
@@ -264,6 +298,7 @@ function Home() {
       quantity: expense.quantity,
       date: expense.date,
       amount: expense.amount,
+      status:expense.status,
     });
 
     // Set the category in the state
@@ -295,6 +330,7 @@ function Home() {
     setCategory('');
     setCustomCategory('');
     setIsAddingCustomCategory(false);
+    setStatus('')
     resetFormValidation();
   };
 
@@ -320,6 +356,7 @@ function Home() {
         { field: 'date', value: date, label: 'Date' },
         { field: 'amount', value: amount, label: 'Amount' },
         { field: 'category', value: category, label: 'Category' },
+        {field: 'status', value: status, label: 'Status'}
       ];
 
       let isValid = true;
@@ -350,7 +387,7 @@ function Home() {
         return;
       }
 
-      const response = await fetch(`https://x-genback-naashits-projects.vercel.app/api/expenses/${_id}`, {
+      const response = await fetch(`http://localhost:5000/api/expenses/${_id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -362,6 +399,7 @@ function Home() {
           date,
           amount,
           category,
+          status,
         }),
       });
 
@@ -417,9 +455,7 @@ function Home() {
       >
         Export to Excel
       </button>
-
       
-
         <button
           type='button'
           className='btn btn-primary'
@@ -433,7 +469,7 @@ function Home() {
           className='form-select'
           value={filterType}
           onChange={handleFilterChange}
-          style={{ float: 'left', marginLeft: '40px', marginTop: '20px', width: '20%' }}
+          style={{ float: 'left', marginLeft: '15px', marginTop: '20px', width: '15%' }}
         >
           <option value='all'>All</option>
           <option value='daily'>Daily</option> {/* Add this line */}
@@ -441,6 +477,17 @@ function Home() {
           <option value='weekly'>Weekly</option>
           <option value='yearly'>Yearly</option>
         </select>
+
+        <select
+        className='form-select'
+        value={statusFilter}
+        onChange={handleStatusFilterChange}
+        style={{ float: 'left', marginLeft: '20px', marginTop: '20px', width: '15%' }}
+      >
+        <option value=''>All Status</option>
+        <option value='Received'>Received</option>
+        <option value='Pay'>Pay</option>
+      </select>
 
         <div className='modal' id='myModal' style={{ display: isModalOpen ? 'block' : 'none', color: 'black' }}>
           <div className='modal-dialog'>
@@ -479,12 +526,30 @@ function Home() {
                   </div>
                 </div>
                 <div className='mb-3 row'>
+                  <div className='col-6'>
+                    <label htmlFor='status' className='form-label'>
+                      Status
+                    </label>
+                    <select
+                      className='form-select'
+                      id='status'
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                    >
+                      <option value=''>Select status</option>
+                      <option>Received</option>
+                      <option>Pay</option>
+                    </select>
+                  </div>
                   <div className='col'>
                     <label htmlFor='amount' className='form-label'>
                       Amount
                     </label>
                     <input type='text' className='form-control' id='amount' />
                   </div>
+                </div>
+                <div className='mb-3 row'>
+                  
                   <div className='col-6'>
                     <label htmlFor='category' className='form-label'>
                       Category
@@ -614,7 +679,22 @@ function Home() {
                   </div>
                 </div>
                 <div className='mb-3 row'>
-                  <div className='col'>
+                    <div className='col-6'>
+                      <label htmlFor='status' className='form-label'>
+                        Status
+                      </label>
+                      <select
+                        className='form-select'
+                        id='status'
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value)}
+                      >
+                        <option value=''>Select status</option>
+                        <option>Received</option>
+                        <option>Pay</option>
+                      </select>
+                    </div>
+                    <div className='col'>
                     <label htmlFor='amount' className='form-label'>
                       Amount
                     </label>
@@ -626,6 +706,9 @@ function Home() {
                     onChange={handleEditFormChange}
                   />
                   </div>
+                  </div>
+                <div className='mb-3 row'>
+                  
                   <div className='col-6'>
                     <label htmlFor='category' className='form-label'>
                       Category
@@ -704,36 +787,44 @@ function Home() {
                   <th>Date</th>
                   <th>Amount</th>
                   <th>Quantity</th>
-                  <th>Actions</th>
+                  <th>Status</th>
+                  <th>Actions</th> 
                 </tr>
               </thead>
               <tbody>
-                {getFilteredExpenses().map((expense, index) => (
-                  <tr key={expense._id}>
-                    <td>{index + 1}</td>
-                    <td>{expense.itemName}</td>
-                    <td>{expense.userName}</td>
-                    <td>{expense.category}</td>
-                    <td>{expense.date}</td>
-                    <td>{expense.amount}</td>
-                    <td>{expense.quantity}</td>
-                    <td className='action-buttons'>
-                      <button
-                        className='btn btn-primary'
-                        onClick={() => openEditModal(expense)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className='btn btn-danger'
-                        onClick={() => handleDeleteExpense(expense._id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+  {getFilteredExpenses().map((expense, index) => (
+    <tr key={expense._id}>
+      <td>{index + 1}</td>
+      <td>{capitalizeWords(expense.itemName)}</td>
+    <td>{capitalizeWords(expense.userName)}</td>
+      <td>{expense.category}</td>
+      <td>{expense.date}</td>
+      <td>{expense.amount}</td>
+      <td>{expense.quantity}</td>
+      <td>
+        <span
+          style={{ color: expense.status === 'Received' ? 'dark green' : 'red' }}
+        >
+          {expense.status}
+        </span>
+      </td>
+      <td className='action-buttons'>
+        <button
+          className='btn btn-primary'
+          onClick={() => openEditModal(expense)}
+        >
+          Edit
+        </button>
+        <button
+          className='btn btn-danger'
+          onClick={() => handleDeleteExpense(expense._id)}
+        >
+          Delete
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
         </table>
       </div>
 
