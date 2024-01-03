@@ -133,15 +133,14 @@ app.post('/api/expenses', async (req, res) => {
   }
 });
 
-
-app.put('/api/expenses/:id', async (req, res) => {
+router.put('/api/expenses/:id', async (req, res) => {
   const expenseId = req.params.id;
-  const { itemName, userName, category, date, amount, quantity, status } = req.body; // Add "status" here
+  const { itemName, userName, category, date, amount, quantity, status, description } = req.body;
 
   try {
     const updatedExpense = await Expense.findByIdAndUpdate(
       expenseId,
-      { itemName, userName, category, date, amount, quantity, status }, // Add "status" here
+      { itemName, userName, category, date, amount, quantity, status, description },
       { new: true }
     );
 
