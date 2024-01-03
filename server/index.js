@@ -83,6 +83,7 @@ const expenseSchema = new mongoose.Schema({
   userName: String,
   category: String,
   date: String,
+  description: String,
   amount: String,
   quantity: String,
   status: String,
@@ -121,9 +122,9 @@ app.get('/api/expenses', async (req, res) => {
 // API endpoint to add a new expense
 // API endpoint to add a new expense
 app.post('/api/expenses', async (req, res) => {
-  const { itemID, itemName, userName, category, date, amount, quantity, status } = req.body;
+  const { itemID, itemName, userName, category, date, description, amount, quantity, status } = req.body;
   try {
-    const newExpense = new Expense({ itemID, itemName, userName, category, date, amount, quantity, status }); // Add "status" here
+    const newExpense = new Expense({ itemID, itemName, userName, category, date, description, amount, quantity, status });
     await newExpense.save();
     res.json(newExpense);
   } catch (error) {
@@ -131,6 +132,7 @@ app.post('/api/expenses', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 app.put('/api/expenses/:id', async (req, res) => {
   const expenseId = req.params.id;
@@ -198,4 +200,3 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
