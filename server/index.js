@@ -54,23 +54,23 @@ app.post('/register', (req, res) => {
     .catch((err) => res.json(err));
 });
 
-// function verifyToken(req, res, next) {
-//   const token = req.cookies.token;
+function verifyToken(req, res, next) {
+  const token = req.cookies.token;
 
-//   if (!token) {
-//     return res.status(401).json({ error: 'Unauthorized - Missing token' });
-//   }
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized - Missing token' });
+  }
 
-//   jwt.verify(token, 'token', (err, decoded) => {
-//     if (err) {
-//       return res.status(401).json({ error: 'Unauthorized - Invalid token' });
-//     }
+  jwt.verify(token, 'token', (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Unauthorized - Invalid token' });
+    }
 
-//     // Attach the decoded user ID to the request for further use
-//     req.userId = decoded.userId;
-//     next();
-//   });
-// }
+    // Attach the decoded user ID to the request for further use
+    req.userId = decoded.userId;
+    next();
+  });
+}
 
 
 
