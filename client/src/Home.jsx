@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import ReceivedTotal from './ReceivedTotal';
 import PayTotal from './PayTotal';
 import BalanceTotal from './BalanceTotal';
-
+import SuccessModal from './SuccessModal';
 
 
 function Home() {
@@ -18,7 +18,7 @@ function Home() {
   const [categories, setCategories] = useState(['Office', 'Kitchen']);
   const [isAddingCustomCategory, setIsAddingCustomCategory] = useState(false);
   const [expenses, setExpenses] = useState([]);
-  const [nextItemID, setNextItemID] = useState(1001);
+  const [nextItemID, setNextItemID] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [totalAmount, setTotalAmount] = useState(0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -34,14 +34,28 @@ function Home() {
     status: '',
     description: '',
   });
-  const [status, setStatus] = useState(['Received' , 'Pay']); // Add this line
+  const [status, setStatus] = useState(''); // Add this line
   const [filterType, setFilterType] = useState('all');
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState('');
-  const [users, setUsers] = useState(['User', 'Admin']);
+  const [users, setUsers] = useState(['User', 'Admin', 'Ali']);
   const [isAddingCustomUser, setIsAddingCustomUser] = useState(false);
   const [customUser, setCustomUser] = useState('');
   const [selectedUser, setSelectedUser] = useState('');
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [successModal, setSuccessModal] = useState({
+    isOpen: false,
+    message: '',
+  });
+  
+
+  const toggleSuccessModal = (message) => {
+    setSuccessMessage(message);
+    setIsSuccessModalOpen(!isSuccessModalOpen);
+    // Automatically close the modal after 1 second
+    setTimeout(() => setIsSuccessModalOpen(false), 2000);
+  };
 
   const capitalizeWords = (str) => {
     if (!str || typeof str !== 'string') {
@@ -148,21 +162,23 @@ switch (filterType) {
   
   const handleUserChange = (e) => {
     setSelectedUser(e.target.value);
+     // Disable custom user input
   };
 
   const handleAddCustomUser = () => {
-    // Assuming you have a users state array, update it accordingly
-    setUsers((prevUsers) => [...prevUsers, editFormData.userName]);
-    setEditFormData((prevData) => ({
-      ...prevData,
-      userName: '', // Clear the input field after adding the user
-    }));
+    if (customUser && !users.includes(customUser)) {
+      setUsers((prevUsers) => [...prevUsers, customUser]);
+      setSelectedUser(customUser);
+      setCustomUser('');
+      setIsAddingCustomUser(false);
+    }
+  };
+  
+  const handleConvertToUserDropdown = () => {
     setIsAddingCustomUser(false);
+    setCustomUser('');
   };
 
-  const handleConvertToUserDropdown = () => {
-    setIsAddingCustomUser(true);
-  };
   const handleSearch = (e) => {
   setSearchTerm(e.target.value);
   const filteredExpenses = expenses.filter((expense) =>
@@ -175,7 +191,6 @@ switch (filterType) {
   setDisplayedExpenses(filteredExpenses);
 };
 
-
   useEffect(() => {
     fetchExpenses();
     fetchNextItemID();
@@ -186,7 +201,7 @@ switch (filterType) {
       // Redirect to the login page if the token is not present
       navigate('/home');
     }// Calculate total amount when the component mounts or expenses change
-  }, [][expenses]);
+  }, []);
 
   const fetchNextItemID = async () => {
     try {
@@ -229,107 +244,120 @@ switch (filterType) {
   const generateUniqueItemID = () => {
     const existingItemIDs = new Set(expenses.map((expense) => expense.itemID));
     let newID = nextItemID;
-
     while (existingItemIDs.has(newID)) {
       newID += 1;
     }
-
     return newID;
   };
 
+  const handleCustomUserChange = (e) => {
+    setCustomUser(e.target.value);
+  };
+
   const handleAddExpense = async () => {
-  // Generate a unique itemID
-  const itemID = nextItemID || generateUniqueItemID();
-  setNextItemID(itemID + 1);
-
-  const itemName = document.getElementById('itemName').value;
-  const userName = document.getElementById('userName').value;
-  const quantity = document.getElementById('quantity').value;
-  const date = document.getElementById('date').value;
-  const amount = document.getElementById('amount').value;
-  const status = document.getElementById('status').value;
-  const description = document.getElementById('description').value;
-
-  // Basic field validations
-  const validationFields = [
-    { field: 'itemName', value: itemName, label: 'Item Name' },
-    { field: 'quantity', value: quantity, label: 'Quantity' },
-    { field: 'date', value: date, label: 'Date' },
-    { field: 'amount', value: amount, label: 'Amount' },
-    { field: 'status', value: status, label: 'Status' },
-    { field: 'description', value: description, label: 'Description' }
-  ];
-
-  // Validation for the category dropdown
-  const categoryField = { field: 'category', value: category, label: 'Category' };
-  validationFields.push(categoryField);
-
-  // Validation for the username dropdown
-  const userNameField = { field: 'userName', value: userName, label: 'User Name' };
-  validationFields.push(userNameField);
-
-  let isValid = true;
-
-  validationFields.forEach((field) => {
-    const element = document.getElementById(field.field);
-
-    if (!field.value) {
-      isValid = false;
-      element.style.borderColor = 'red';
-      const errorLabel = document.createElement('div');
-      errorLabel.className = 'error-label';
-      errorLabel.innerText = `The ${field.label} must be fulfilled.`;
-      errorLabel.style.color = 'red'; // Set red color
-
-      // Check if the error label already exists before adding it
-      if (!element.parentElement.querySelector('.error-label')) {
-        element.parentElement.appendChild(errorLabel);
+    // Generate a unique itemID
+    const itemID = nextItemID || generateUniqueItemID();
+    setNextItemID(itemID + 1);
+  
+    const itemName = document.getElementById('itemName').value;
+    const userName = document.getElementById('userName').value;
+    const quantityInput = document.getElementById('quantity');
+    const date = document.getElementById('date').value;
+    const amountInput = document.getElementById('amount');
+    const status = document.getElementById('status').value;
+    const description = document.getElementById('description').value;
+  
+    const quantityValue = quantityInput.value.replace(/[^\d]/g, '');
+    const quantity = parseInt(quantityValue, 10);
+  
+    // Validate and format amount
+    const amountValue = amountInput.value.replace(/[^\d]/g, '');
+    const amount = parseInt(amountValue, 10);
+  
+    
+    // Basic field validations
+    const validationFields = [
+      { field: 'itemName', value: itemName, label: 'Item Name' },
+      { field: 'quantity', value: quantity, label: 'Quantity' },
+      { field: 'date', value: date, label: 'Date' },
+      { field: 'amount', value: amount, label: 'Amount' },
+      { field: 'status', value: status, label: 'Status' },
+      { field: 'description', value: description, label: 'Description' },
+    ];
+  
+    // Validation for the category dropdown
+    const categoryField = { field: 'category', value: category, label: 'Category' };
+    validationFields.push(categoryField);
+  
+    // Validation for the username dropdown
+    const userNameField = { field: 'userName', value: userName, label: 'User Name' };
+    validationFields.push(userNameField);
+    
+    
+    let isValid = true;
+  
+    validationFields.forEach((field) => {
+      const element = document.getElementById(field.field);
+  
+      if (!field.value) {
+        isValid = false;
+        element.style.borderColor = 'red';
+        const errorLabel = document.createElement('div');
+        errorLabel.className = 'error-label';
+        errorLabel.innerText = `The ${field.label} must be fulfilled.`;
+        errorLabel.style.color = 'red'; // Set red color
+  
+        // Check if the error label already exists before adding it
+        if (!element.parentElement.querySelector('.error-label')) {
+          element.parentElement.appendChild(errorLabel);
+        }
+      } else {
+        element.style.borderColor = ''; // Reset border color
+        const errorLabel = element.parentElement.querySelector('.error-label');
+        if (errorLabel) {
+          errorLabel.remove(); // Remove error label if it exists
+        }
       }
-    } else {
-      element.style.borderColor = ''; // Reset border color
-      const errorLabel = element.parentElement.querySelector('.error-label');
-      if (errorLabel) {
-        errorLabel.remove(); // Remove error label if it exists
-      }
-    }
-  });
-
-  if (!isValid) {
-    return;
-  }
-
-  try {
-    const response = await fetch('https://x-gen-backend.vercel.app/api/expenses', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        itemID,
-        itemName,
-        userName,
-        quantity,
-        date,
-        amount,
-        category,
-        status,
-        description,
-      }),
     });
-
-    if (response.ok) {
-      const addedExpense = await response.json();
-      setExpenses((prevExpenses) => [...prevExpenses, addedExpense]);
-      calculateTotalAmount(); // Update total amount after adding expense
-      toggleModal();
-      clearModalFields();
-    } else {
-      console.error('Failed to add expense:', response.status);
+  
+    if (!isValid) {
+      return;
     }
-  } catch (error) {
-    console.error('Error adding expense:', error);
-  }
-};
+    
+    try {
+      const response = await fetch('https://x-gen-backend.vercel.app/api/expenses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          itemID,
+          itemName,
+          userName,
+          quantity,
+          date,
+          amount,
+          category,
+          status,
+          description,
+        }),
+      });
+  
+      if (response.ok) {
+        const addedExpense = await response.json();
+        setExpenses((prevExpenses) => [...prevExpenses, addedExpense]);
+        calculateTotalAmount(); // Update total amount after adding expense
+        toggleSuccessModal('Expense added successfully'); // Show success modal
+        clearModalFields();
+        toggleModal(); // Close the modal
+      } else {
+        console.error('Failed to add expense:', response.status);
+      }
+    } catch (error) {
+      console.error('Error adding expense:', error.message);
+    }
+  };
+  
 
   const fetchExpenses = async () => {
     try {
@@ -341,9 +369,9 @@ switch (filterType) {
   
       const data = await response.json();
       setExpenses(data);
-      calculateTotalAmount(); // Update total amount after fetching expenses
+      calculateTotalAmount();
     } catch (error) {
-      console.error(error.message);
+      console.error('Error fetching expenses:', error);
     }
   };
   
@@ -359,10 +387,11 @@ switch (filterType) {
         const updatedExpenses = expenses.filter((expense) => expense._id !== expenseId);
         setExpenses(updatedExpenses);
         calculateTotalAmount(); // Update total amount after deleting expense
+        toggleSuccessModal('Expense deleted successfully');
       } else {
         console.error('Failed to delete expense:', response.status);
       }
-    } catch (error) {                                           
+    } catch (error) {
       console.error('Error deleting expense:', error.message);
     }
   };
@@ -376,7 +405,6 @@ switch (filterType) {
       }
       return acc;
     }, 0);
-  
     setTotalAmount(total);
   };
   
@@ -395,6 +423,7 @@ switch (filterType) {
 
     // Set the category in the state
     setCategory(expense.category);
+    setStatus(expense.status);
   };
 
 
@@ -412,15 +441,17 @@ switch (filterType) {
     XLSX.writeFile(wb, fileName);
   };
   
-
   const clearModalFields = () => {
     document.getElementById('itemName').value = '';
     document.getElementById('userName').value = '';
     document.getElementById('quantity').value = '';
     document.getElementById('date').value = '';
     document.getElementById('amount').value = '';
-    document.getElementById('status').value = '';
-    document.getElementById('description').value = ''; // Clear description field
+    document.getElementById('status').value = ''; // Set the selectedIndex to 0 to reset the dropdown
+    document.getElementById('description').value = '';
+    setStatus('');
+    setSelectedUser('');
+    setCustomUser('');
     setCategory('');
     setCustomCategory('');
     setIsAddingCustomCategory(false);
@@ -429,8 +460,6 @@ switch (filterType) {
     setEditFormData({ ...editFormData, description: '' });
   };
   
-
-
   const openEditModal = (expense) => {
     setEditedExpense(expense);
     setIsEditModalOpen(true);
@@ -498,7 +527,7 @@ switch (filterType) {
           date,
           amount,
           category,
-          status: editStatus, // Use editStatus instead of status
+          status,
           description,
         }),
       });
@@ -511,23 +540,33 @@ switch (filterType) {
         setIsEditModalOpen(false);
         setEditedExpense({});
         clearModalFields();
-      } else {
-        console.error('Failed to edit expense:', response.status);
-      }
-    } catch (error) {
-      console.error('Error editing expense:', error);
+        toggleSuccessModal('Expense updated successfully');
+    } else {
+      console.error('Failed to update expense:', response.status);
     }
+  } catch (error) {
+    console.error('Error update expense:', error.message);
+  }
   };
   
-  
-
   const handleEditFormChange = (e) => {
-  const { id, value } = e.target;
-  setEditFormData((prevData) => ({
-    ...prevData,
-    [id]: value,
-  }));
-};
+    const { id, value } = e.target;
+  
+    // Check if the field is 'description'
+    if (id === 'description') {
+      // Limit the description to 30 words
+      const words = value.split(/\s+/);
+      if (words.length > 30) {
+        return; // Don't update the state if the limit is exceeded
+      }
+    }
+  
+    // Update the state for other fields
+    setEditFormData((prevData) => ({
+      ...prevData,
+      [id]: value,
+    }));
+  };
   
   return (
     <MDBContainer fluid className='p-0 background overflow-hidden vh-100'>
@@ -550,8 +589,17 @@ switch (filterType) {
         />
          <PayTotal expenses={getFilteredExpenses()} />
         <ReceivedTotal expenses={getFilteredExpenses()} />
-       
-      
+
+        <SuccessModal
+        isOpen={isSuccessModalOpen}
+        message={successMessage}
+        onDismiss={() => setIsSuccessModalOpen(false)}
+                />
+          <SuccessModal
+            isOpen={successModal.isOpen}
+            message={successModal.message}
+            onDismiss={() => setSuccessModal({ isOpen: false, message: '' })}
+          />
           <input
             type='text'
             placeholder='Search by Item Name'
@@ -607,7 +655,8 @@ switch (filterType) {
           </select>
           {/* ... Existing JSX ... */}
 
-
+          <SuccessModal message={successMessage} onClose={() => setSuccessMessage('')} />
+            
         <select
         className='form-select'
         value={statusFilter}
@@ -630,71 +679,72 @@ switch (filterType) {
               <div className='modal-body'>
                 <div className='mb-3 row'>
                   <div className='col text-start'>
-                    <label htmlFor='itemName' className='form-label'>
+                    <label htmlFor='itemName' className='form-label' class = "required">
                       Item Name
                     </label>
                     <input type='text' className='form-control' id='itemName' />
                   </div>
                   <div className='col'>
-                  <div className='col text-start'>
-  <label htmlFor='userName' className='form-label'>
-    User Name
-  </label>
-  {isAddingCustomUser ? (
-    <div className='input-group'>
-      <input
-        type='text'
-        className='form-control'
-        placeholder='Enter custom user'
-        value={customUser}
-        onChange={(e) => setCustomUser(e.target.value)}
-      />
-      <button
-        className='btn btn-outline-secondary'
-        type='button'
-        onClick={handleAddCustomUser}
-      >
-        Add
-      </button>
-    </div>
-  ) : (
-    <div className='input-group'>
-      <select
-        className='form-select'
-        id='userName'
-        value={selectedUser}
-        onChange={handleUserChange}
-      >
-        <option value='' disabled>
-          Select user
-        </option>
-        {users.map((user) => (
-          <option key={user} value={user}>
-            {user}
-          </option>
-        ))}
-      </select>
-      <button
-        className='btn btn-outline-secondary'
-        type='button'
-        onClick={handleConvertToUserDropdown}
-      >
-        Add
-      </button>
-    </div>
-  )}
-</div>
-</div>
+                    <div className='col text-start'>
+                    <label htmlFor='userName' className='form-label' class='required'>
+        User Name
+      </label>
+      {isAddingCustomUser ? (
+        <div className='input-group'>
+          <input
+            type='text'
+            className='form-control'
+            placeholder='Enter custom user'
+            value={customUser}
+            onChange={handleCustomUserChange}
+          />
+          <button
+            className='btn btn-outline-secondary'
+            type='button'
+            onClick={handleAddCustomUser}
+          >
+            Add
+          </button>
+        </div>
+      ) : (
+        <div className='input-group'>
+          <select
+            className='form-select'
+            id='userName'
+            value={selectedUser}
+            onChange={handleUserChange}
+          >
+            <option value='' disabled>
+              Select user
+            </option>
+            {users.map((user) => (
+              <option key={user} value={user}>
+                {user}
+              </option>
+            ))}
+          </select>
+          <button
+            className='btn btn-outline-secondary'
+            type='button'
+            onClick={() => setIsAddingCustomUser(true)}
+          >
+            Add
+          </button>
+        </div>
+      
+                  )}
+                </div>
+                  </div>
                 </div>
                 <div className='mb-3 row'>
                   <div className='col text-start'>
-                    <label htmlFor='quantity' className='form-label'>
+                    <label htmlFor='quantity' className='form-label' class = "required">
                       Quantity
                     </label>
                     <input type='text' className='form-control' id='quantity' />
                   </div>
                   <div className='col text-start'>
-                    <label htmlFor='date' className='form-label'>
+                    <label htmlFor='date' className='form-label' class = "required">
                       Date
                     </label>
                     <input type='date' className='form-control' id='date' />
@@ -702,7 +752,7 @@ switch (filterType) {
                 </div>
                 <div className='mb-3 row'>
                   <div className='col-6 text-start'>
-                    <label htmlFor='status' className='form-label'>
+                    <label htmlFor='status' className='form-label' class = "required">
                       Status
                     </label>
                     <select
@@ -717,7 +767,7 @@ switch (filterType) {
                     </select>
                   </div>
                   <div className='col text-start'>
-                    <label htmlFor='amount' className='form-label'>
+                    <label htmlFor='amount' className='form-label' class = "required">
                       Amount
                     </label>
                     <input type='text' className='form-control' id='amount' />
@@ -725,7 +775,7 @@ switch (filterType) {
                 </div>
                 <div className='mb-3 row'>
                 <div className='col text-start'>
-                    <label htmlFor='description' className='form-label'>
+                    <label htmlFor='description' className='form-label' class = "required">
                       Description
                     </label>
                     <input
@@ -737,7 +787,7 @@ switch (filterType) {
                     />
                   </div>
                   <div className='col-6 text-start'>
-                    <label htmlFor='category' className='form-label'>
+                    <label htmlFor='category' className='form-label' class = "required">
                       Category
                     </label>
                     {isAddingCustomCategory ? (
@@ -814,7 +864,7 @@ switch (filterType) {
       <div className='modal-body'>
         <div className='mb-3 row'>
           <div className='col text-start'>
-            <label htmlFor='itemName' className='form-label'>
+            <label  htmlFor='itemName' className='form-label'>
               Item Name
             </label>
             <input
@@ -826,54 +876,54 @@ switch (filterType) {
             />
           </div>
           <div className='col'>
-  <div className='col text-start'>
-    <label htmlFor='userName' className='form-label'>
-      User Name
-    </label>
-    {isAddingCustomUser ? (
-      <div className='input-group'>
-        <input
-          type='text'
-          className='form-control'
-          placeholder='Enter custom user'
-          value={editFormData.userName || ''}
-          onChange={handleEditFormChange}
-        />
-        <button
-          className='btn btn-outline-secondary'
-          type='button'
-          onClick={handleAddCustomUser}
-        >
-          Add
-        </button>
-      </div>
-    ) : (
-      <div className='input-group'>
-        <select
-          className='form-select'
-          id='userName'
-          value={editFormData.userName || ''}
-          onChange={handleEditFormChange}
-        >
-          <option value='' disabled>
-            Select user
-          </option>
-          {users.map((user) => (
-            <option key={user} value={user}>
-              {user}
+          <div className='col text-start'>
+      <label htmlFor='userName' className='form-label'>
+        User Name
+      </label>
+      {isAddingCustomUser ? (
+        <div className='input-group'>
+          <input
+            type='text'
+            className='form-control'
+            placeholder='Enter custom user'
+            value={customUser}
+            onChange={(e) => setCustomUser(e.target.value)}
+          />
+          <button
+            className='btn btn-outline-secondary'
+            type='button'
+            onClick={handleAddCustomUser}
+          >
+            Add
+          </button>
+        </div>
+      ) : (
+        <div className='input-group'>
+          <select
+            className='form-select'
+            id='userName'
+            value={editFormData.userName || ''}
+            onChange={handleEditFormChange}
+          >
+            <option value='' disabled>
+              Select user
             </option>
-          ))}
-        </select>
-        <button
-          className='btn btn-outline-secondary'
-          type='button'
-          onClick={handleConvertToUserDropdown}
-        >
-          Add
-        </button>
-      </div>
-    )}
-  </div>
+            {users.map((user) => (
+              <option key={user} value={user}>
+                {user}
+              </option>
+            ))}
+          </select>
+          <button
+            className='btn btn-outline-secondary'
+            type='button'
+            onClick={handleConvertToUserDropdown}
+          >
+            Add
+          </button>
+        </div>
+      )}
+    </div>
 </div>
 </div>
         <div className='mb-3 row'>
@@ -910,7 +960,7 @@ switch (filterType) {
             <select
               className='form-select'
               id='status'
-              value={status}
+              value={status} // Use an empty string as the default value if status is undefined
               onChange={(e) => setStatus(e.target.value)}
             >
               <option value=''>Select status</option>
@@ -1036,9 +1086,9 @@ switch (filterType) {
     <td>{expense.amount}</td>
     <td>{expense.quantity}</td>
     <td>
-      <span style={{ color: expense.status === 'Received' ? 'dark green' : 'red' }}>
-        {expense.status}
-      </span>
+      <span style={{ color: expense.status === 'Received' ? 'darkgreen' : 'red' }}>
+  {expense.status}
+</span>
     </td>
     <td className='action-buttons'>
       <button className='btn btn-primary' onClick={() => openEditModal(expense)}>
