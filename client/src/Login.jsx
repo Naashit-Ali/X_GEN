@@ -57,7 +57,7 @@ function Login() {
     <MDBRow>
 
       <MDBCol md='6' className='text-center text-md-start d-flex flex-column justify-content-center'>
-      <img src="./src/assets/xgen.png" alt="Login Image" style={{ width: '20%', position: "relative", bottom: 30, left: 240 }} />
+      <img href="src/assets/xgen.png" alt="Login Image" style={{ width: '20%', position: "relative", bottom: 30, left: 240 }} />
 
         <h1 className="my-3 display-3 fw-bold ls-tight px-3" style={{ color: 'hsl(218, 81%, 95%)' }}>
           Elevating Excellence in<br />
