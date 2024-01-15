@@ -595,7 +595,7 @@ switch (filterType) {
     
                 <h1>Expenses Report</h1>
                 {/* <img src="./src/assets/xgen.png" alt="Login Image" style={{ width: '4%', float:'left' , backgroundColor: 'black' }} /> */}
-
+                 
 
       {/* Modal */}
       <Modal show={showModal} onHide={handleCancelDelete} style={{ color: 'black', position: 'fixed', 
@@ -1094,7 +1094,7 @@ switch (filterType) {
   </div>
 </div>
 
-       <div className='table_div'>
+<div className='table_div'>
   <div className='table-container'>
     <div className='table-scroll'>
       <table className='table table-white table-hover'>
