@@ -18,6 +18,11 @@
       transparent 100%);
 }
 
+.table-scroll {
+  max-height: 500px; /* Set the desired height */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 .table-container {
   max-height: 500px; /* Set your preferred height here */
   /* overflow-y: auto; */
