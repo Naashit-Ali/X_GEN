@@ -9,6 +9,8 @@ import ReceivedTotal from './ReceivedTotal';
 import PayTotal from './PayTotal';
 import BalanceTotal from './BalanceTotal';
 import SuccessModal from './SuccessModal';
+import { Modal, Button } from 'react-bootstrap';
+
 
 
 function Home() {
@@ -24,7 +26,7 @@ function Home() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editedExpense, setEditedExpense] = useState({});
   const [editStatus, setEditStatus] = useState('');
-  const [sortType, setSortType] = useState('a-z');
+  const [sortType, setSortType] = useState('recently-added');
   const [editFormData, setEditFormData] = useState({
     itemName: '',
     userName: '',
@@ -48,6 +50,14 @@ function Home() {
     isOpen: false,
     message: '',
   });
+  const [selectedExpenseId, setSelectedExpenseId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleDeleteExpense = (expenseId) => {
+    setSelectedExpenseId(expenseId);
+    setShowModal(true);
+  };
+
   
 
   const toggleSuccessModal = (message) => {
@@ -98,7 +108,15 @@ function Home() {
 
 let sortedExpenses = filteredByStatus;
 
+
 switch (sortType) {
+  case 'recently-added':
+    sortedExpenses = sortedExpenses.sort((a, b) => {
+      const dateA = a.date ? new Date(a.date) : 0;
+      const dateB = b.date ? new Date(b.date) : 0;
+      return dateB - dateA;
+    });
+    break;
   case 'a-z':
     sortedExpenses = sortedExpenses.sort((a, b) => (a.itemName || '').localeCompare(b.itemName || ''));
     break;
@@ -110,13 +128,6 @@ switch (sortType) {
     break;
   case 'descending':
     sortedExpenses = sortedExpenses.sort((a, b) => (parseFloat(b.amount) || 0) - (parseFloat(a.amount) || 0));
-    break;
-  case 'recently-added':
-    sortedExpenses = sortedExpenses.sort((a, b) => {
-      const dateA = a.date ? new Date(a.date) : 0;
-      const dateB = b.date ? new Date(b.date) : 0;
-      return dateB - dateA;
-    });
     break;
   default:
     break;
@@ -377,23 +388,29 @@ switch (filterType) {
   
   
 
-  const handleDeleteExpense = async (expenseId) => {
+  const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`https://x-gen-backend.vercel.app/api/expenses/${expenseId}`, {
+      const response = await fetch(`https://x-gen-backend.vercel.app/api/expenses/${selectedExpenseId}`, {
         method: 'DELETE',
       });
-  
+
       if (response.ok) {
-        const updatedExpenses = expenses.filter((expense) => expense._id !== expenseId);
+        const updatedExpenses = expenses.filter((expense) => expense._id !== selectedExpenseId);
         setExpenses(updatedExpenses);
-        calculateTotalAmount(); // Update total amount after deleting expense
+        calculateTotalAmount();
         toggleSuccessModal('Expense deleted successfully');
       } else {
         console.error('Failed to delete expense:', response.status);
       }
     } catch (error) {
       console.error('Error deleting expense:', error.message);
+    } finally {
+      setShowModal(false);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setShowModal(false);
   };
   
   const calculateTotalAmount = () => {
@@ -432,9 +449,7 @@ switch (filterType) {
     const formattedDate = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1)
       .toString()
       .padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
-  
     const fileName = `expenses_${formattedDate}.xlsx`;
-  
     const ws = XLSX.utils.json_to_sheet(expenses);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Expenses');
@@ -577,8 +592,30 @@ switch (filterType) {
       </div> */}
 
       <div className='div2'>
+    
                 <h1>Expenses Report</h1>
+                <img src="./src/assets/xgen.png" alt="Login Image" style={{ width: '4%', float:'left' , backgroundColor: 'black' }} />
+                 {/* ... (your existing code) */}
 
+      {/* Modal */}
+      <Modal show={showModal} onHide={handleCancelDelete} style={{ color: 'black', position: 'fixed', 
+  top: '0', left: '0', width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(8px)'}}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Delete</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to delete this expense? 
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCancelDelete}>
+            Close
+          </Button>
+          <Button variant="danger" onClick={handleConfirmDelete}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      
         <BalanceTotal
           totalReceived={getFilteredExpenses()
             .filter((expense) => expense.status === 'Received')
@@ -606,14 +643,14 @@ switch (filterType) {
             value={searchTerm}
             onChange={handleSearch}
             className='form-control'
-            style={{ float: 'left', width: '300px', marginTop: '20px', border: '2px solid #000' }}
+            style={{ float: 'left', width: '300px', marginTop: '20px', marginLeft: '90px' }}
           />
 
           <button
           type='button'
           className='btn btn-primary'
           onClick={toggleModal}
-          style={{ float: 'right',  marginTop: '20px' }}
+          style={{ float: 'right',  marginTop: '20px', marginRight:'90px' }}
         >
           Add New Expense
         </button>
@@ -647,7 +684,7 @@ switch (filterType) {
             onChange={handleSortChange}
             style={{ float: 'left', marginLeft: '20px', marginTop: '20px', width: '10%' }}
           >
-          <option value='recently-added'>Recently Added</option>
+            <option value='recently-added'>Recently Added</option>
             <option value='a-z'>A to Z</option>
             <option value='z-a'>Z to A</option>
             <option value='ascending'>Ascending</option>
@@ -1058,51 +1095,57 @@ switch (filterType) {
 </div>
 
         <div className='table_div'>
-      <div className='table-container'>
-      <table className='table table-white table-hover'>
-              <thead>
-                <tr>
-                  <th>S.No</th>
-                  <th>Item Name</th>
-                  <th>User Name</th>
-                  <th>Category</th>
-                  <th>Date</th>
-                  <th>Description</th> {/* Add this line */}
-                  <th>Amount</th>
-                  <th>Quantity</th>
-                  <th>Status</th>
-                  <th>Actions</th> 
-                </tr>
-              </thead>
-              <tbody>
-              {getFilteredExpenses().map((expense, index) => (
-  <tr key={expense._id}>
-    <td>{index + 1}</td>
-    <td>{capitalizeWords(expense.itemName)}</td>
-    <td>{capitalizeWords(expense.userName)}</td>
-    <td>{expense.category}</td>
-    <td>{expense.date}</td>
-    <td>{expense.description}</td> {/* Add this line */}
-    <td>{expense.amount}</td>
-    <td>{expense.quantity}</td>
-    <td>
-      <span style={{ color: expense.status === 'Received' ? 'darkgreen' : 'red' }}>
-  {expense.status}
-</span>
-    </td>
-    <td className='action-buttons'>
-      <button className='btn btn-primary' onClick={() => openEditModal(expense)}>
-        Edit
-      </button>
-      <button className='btn btn-danger' onClick={() => handleDeleteExpense(expense._id)}>
-        Delete
-      </button>
-    </td>
-  </tr>
-))}
-</tbody>
-        </table>
-      </div>
+        <div className='table-container'>
+  <table className='table table-white table-hover'>
+    <thead>
+      <tr>
+        <th>S.No</th>
+        <th>Item Name</th>
+        <th>User Name</th>
+        <th>Category</th>
+        <th>Date</th>
+        <th>Description</th> {/* Add this line */}
+        <th>Amount</th>
+        <th>Quantity</th>
+        <th>Status</th>
+        <th>Actions</th> 
+      </tr>
+    </thead>
+    <tbody>
+      {getFilteredExpenses().length === 0 ? (
+        <tr>
+          <td colSpan="10">Not found</td>
+        </tr>
+      ) : (
+        getFilteredExpenses().map((expense, index) => (
+          <tr key={expense._id}>
+            <td>{index + 1}</td>
+            <td>{capitalizeWords(expense.itemName)}</td>
+            <td>{capitalizeWords(expense.userName)}</td>
+            <td>{expense.category}</td>
+            <td>{expense.date}</td>
+            <td>{expense.description}</td> {/* Add this line */}
+            <td>{expense.amount}</td>
+            <td>{expense.quantity}</td>
+            <td>
+              <span style={{ color: expense.status === 'Received' ? 'darkgreen' : 'red' }}>
+                {expense.status}
+              </span>
+            </td>
+            <td className='action-buttons'>
+              <button className='btn btn-primary' onClick={() => openEditModal(expense)}>
+                Edit
+              </button>
+              <button className='btn btn-danger' onClick={() => handleDeleteExpense(expense._id)}>
+                Delete
+              </button>
+            </td>
+          </tr>
+        ))
+      )}
+    </tbody>
+  </table>
+</div>
 
       <div className='total-row'>
         <table className='table table-dark table-hover'>
