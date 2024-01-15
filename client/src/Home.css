@@ -2,11 +2,6 @@
   background-color: white;
  }
 
- .required::after {
-  content: ' *';
-  color: red;
-}
-
  .background-radial-gradient {
   background-color: hsl(218, 41%, 15%);
   background-image: radial-gradient(650px circle at 0% 0%,
@@ -22,9 +17,48 @@
       hsl(218, 41%, 19%) 80%,
       transparent 100%);
 }
+
 .table-container {
   max-height: 500px; /* Set your preferred height here */
-  overflow-y: auto;
+  /* overflow-y: auto; */
+  width: 90%;
+  margin-left: 5%;
+}
+
+.total-row{
+  width: 90%;
+  margin-left: 5%;
+}
+
+
+.total-div {
+  border: 1px solid #ddd;
+  padding: 0 px;
+  margin: 15px;
+  text-align: center;
+  width: 30%;
+  height: 90px;
+  border-radius: 15px;
+}
+
+.received-total {
+  background-color: #e6ffe6; /* Light green */
+  float: right;
+    font-size: 30px;
+  }
+
+.pay-total {
+  background-color: #ffe6e6; /* Light red */
+  float: right;
+  font-size: 30px;
+}
+
+.balance-total {
+  background-color: #e6e6ff; /* Light blue */
+  float: right;
+  font-size: 30px;
+
+
 }
 .total-div {
   border: 1px solid #ddd;
@@ -89,6 +123,7 @@ color: #f1f1f1;
 background-color:#990011;
 border-radius: 20px;
 }
+
 
 /* Style the main content */
 .main {
@@ -222,5 +257,3 @@ width: 99%;
 
   }
 }
-
-
