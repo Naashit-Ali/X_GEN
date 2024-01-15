@@ -1094,9 +1094,10 @@ switch (filterType) {
   </div>
 </div>
 
-        <div className='table_div'>
-        <div className='table-container'>
-  <table className='table table-white table-hover'>
+       <div className='table_div'>
+  <div className='table-container'>
+    <div className='table-scroll'>
+      <table className='table table-white table-hover'>
     <thead>
       <tr>
         <th>S.No</th>
@@ -1144,23 +1145,24 @@ switch (filterType) {
         ))
       )}
     </tbody>
-  </table>
-</div>
+    </table>
+    </div>
+  </div>
 
-      <div className='total-row'>
-        <table className='table table-dark table-hover'>
-          <tfoot>
-            <tr>
-              <td colSpan='5'></td>
-              <td>Total:</td>
-              <td>{totalAmount.toFixed(2)}</td>
-              <td></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-        </div>
-      </div>
+  <div className='total-row'>
+    <table className='table table-dark table-hover'>
+      <tfoot>
+        <tr>
+          <td colSpan='5'></td>
+          <td>Total:</td>
+          <td>{totalAmount.toFixed(2)}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+</div>
     </MDBContainer>
   );
 }
