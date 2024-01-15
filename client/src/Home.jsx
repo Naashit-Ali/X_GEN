@@ -594,8 +594,8 @@ switch (filterType) {
       <div className='div2'>
     
                 <h1>Expenses Report</h1>
-                <img src="./src/assets/xgen.png" alt="Login Image" style={{ width: '4%', float:'left' , backgroundColor: 'black' }} />
-                 {/* ... (your existing code) */}
+                {/* <img src="./src/assets/xgen.png" alt="Login Image" style={{ width: '4%', float:'left' , backgroundColor: 'black' }} /> */}
+
 
       {/* Modal */}
       <Modal show={showModal} onHide={handleCancelDelete} style={{ color: 'black', position: 'fixed', 
