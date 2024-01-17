@@ -10,6 +10,8 @@ import PayTotal from './PayTotal';
 import BalanceTotal from './BalanceTotal';
 import SuccessModal from './SuccessModal';
 import { Modal, Button } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Spinner from 'react-bootstrap/Spinner';
 
 
 
@@ -60,16 +62,9 @@ function Home() {
 
   
 
-  const toggleSuccessModal = (message) => {
-    setSuccessMessage(message);
-    setIsSuccessModalOpen(!isSuccessModalOpen);
-    // Automatically close the modal after 1 second
-    setTimeout(() => setIsSuccessModalOpen(false), 2000);
-  };
-
   const capitalizeWords = (str) => {
     if (!str || typeof str !== 'string') {
-      return ''; // handle undefined or non-string input
+      return ''; 
     }
   
     return str
@@ -77,7 +72,6 @@ function Home() {
       .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1) : ''))
       .join(' ');
   };
-  
 
   const handleFilterChange = (e) => {
     setFilterType(e.target.value);
@@ -177,7 +171,7 @@ switch (filterType) {
   };
 
   const handleAddCustomUser = () => {
-    if (customUser && !users.includes(customUser)) {
+    if (customUser.trim() !== '' && !users.includes(customUser)) {
       setUsers((prevUsers) => [...prevUsers, customUser]);
       setSelectedUser(customUser);
       setCustomUser('');
@@ -205,13 +199,11 @@ switch (filterType) {
   useEffect(() => {
     fetchExpenses();
     fetchNextItemID();
-    calculateTotalAmount(); 
-    const token = Cookies.get('token'); // Replace 'your_token_key_here' with your actual token key
-
+    calculateTotalAmount();   
+    const token = Cookies.get('token'); 
     if (!token) {
-      // Redirect to the login page if the token is not present
       navigate('/home');
-    }// Calculate total amount when the component mounts or expenses change
+    }
   }, []);
 
   const fetchNextItemID = async () => {
@@ -356,11 +348,25 @@ switch (filterType) {
   
       if (response.ok) {
         const addedExpense = await response.json();
-        setExpenses((prevExpenses) => [...prevExpenses, addedExpense]);
-        calculateTotalAmount(); // Update total amount after adding expense
-        toggleSuccessModal('Expense added successfully'); // Show success modal
-        clearModalFields();
-        toggleModal(); // Close the modal
+      setExpenses((prevExpenses) => [...prevExpenses, addedExpense]);
+      calculateTotalAmount(); // Update total amount after adding expense
+
+      // Show success modal first
+      toggleSuccessModal('Expense added successfully');
+
+      // After 0.5 second, hide success modal and show spinner
+      setTimeout(() => {
+        const spinnerWrapperEl = document.querySelector('.spinner-wrapper');
+        spinnerWrapperEl.style.display = 'flex';
+
+        // After 0.5 second, hide spinner
+        setTimeout(() => {
+          spinnerWrapperEl.style.display = 'none';
+        }, 500);
+      }, 800);
+
+      clearModalFields();
+      toggleModal(); // Close the modal
       } else {
         console.error('Failed to add expense:', response.status);
       }
@@ -369,7 +375,6 @@ switch (filterType) {
     }
   };
   
-
   const fetchExpenses = async () => {
     try {
       const response = await fetch('https://x-gen-backend.vercel.app/api/expenses');
@@ -393,12 +398,25 @@ switch (filterType) {
       const response = await fetch(`https://x-gen-backend.vercel.app/api/expenses/${selectedExpenseId}`, {
         method: 'DELETE',
       });
-
+  
       if (response.ok) {
         const updatedExpenses = expenses.filter((expense) => expense._id !== selectedExpenseId);
         setExpenses(updatedExpenses);
         calculateTotalAmount();
+  
+        // Show success modal first
         toggleSuccessModal('Expense deleted successfully');
+  
+        // After 0.5 second, hide success modal and show spinner
+        setTimeout(() => {
+          const spinnerWrapperEl = document.querySelector('.spinner-wrapper');
+          spinnerWrapperEl.style.display = 'flex';
+  
+          // After 0.5 second, hide spinner
+          setTimeout(() => {
+            spinnerWrapperEl.style.display = 'none';
+          }, 500);
+        }, 800);
       } else {
         console.error('Failed to delete expense:', response.status);
       }
@@ -408,6 +426,7 @@ switch (filterType) {
       setShowModal(false);
     }
   };
+  
 
   const handleCancelDelete = () => {
     setShowModal(false);
@@ -484,6 +503,7 @@ switch (filterType) {
   
 
   const handleEditModalSubmit = async () => {
+    
     try {
       const _id = editedExpense._id;
   
@@ -556,6 +576,16 @@ switch (filterType) {
         setEditedExpense({});
         clearModalFields();
         toggleSuccessModal('Expense updated successfully');
+      // After 0.5 second, hide success modal and show spinner
+      setTimeout(() => {
+        const spinnerWrapperEl = document.querySelector('.spinner-wrapper');
+        spinnerWrapperEl.style.display = 'flex';
+
+        // After 0.5 second, hide spinner
+        setTimeout(() => {
+          spinnerWrapperEl.style.display = 'none';
+        }, 500);
+      }, 800);
     } else {
       console.error('Failed to update expense:', response.status);
     }
@@ -563,6 +593,7 @@ switch (filterType) {
     console.error('Error update expense:', error.message);
   }
   };
+  
   
   const handleEditFormChange = (e) => {
     const { id, value } = e.target;
@@ -582,6 +613,23 @@ switch (filterType) {
       [id]: value,
     }));
   };
+
+  const toggleSuccessModal = (message) => {
+    setSuccessMessage(message);
+    setIsSuccessModalOpen(!isSuccessModalOpen);
+  
+    // Automatically close the modal after 1 second
+    setTimeout(() => {
+      setIsSuccessModalOpen(false);
+    }, 500);
+  };
+
+  const spinnerWrapperEl = document.querySelector('.spinner-wrapper');
+setTimeout(() => {
+  spinnerWrapperEl.style.display = 'none';
+}, 200);
+
+  
   
   return (
     <MDBContainer fluid className='p-0 background overflow-hidden vh-100'>
@@ -590,8 +638,13 @@ switch (filterType) {
           <i className='fa fa-fw fa-wrench'></i> Expenses
         </a>
       </div> */}
-
+<div class="spinner-wrapper">
+        <div class="spinner-border" role="status">
+  <span class="visually-hidden">Loading...</span>
+</div>
+        </div>
       <div className='div2'>
+        
     
                 <h1>Expenses Report</h1>
                 {/* <img src="./src/assets/xgen.png" alt="Login Image" style={{ width: '4%', float:'left' , backgroundColor: 'black' }} /> */}
