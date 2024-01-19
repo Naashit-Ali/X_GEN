@@ -1007,7 +1007,7 @@ setTimeout(() => {
           <button
             className='btn btn-outline-secondary'
             type='button'
-            onClick={handleConvertToUserDropdown}
+            onClick={() => setIsAddingCustomUser(true)}
           >
             Add
           </button>
